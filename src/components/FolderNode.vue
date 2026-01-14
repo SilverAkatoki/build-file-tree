@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  type FileNode as IFileNode,
-  type FolderNode as IFolderNode,
-} from "../types";
+import type { FileNode as IFileNode, FolderNode as IFolderNode } from "@/types";
 import FileNode from "@/components/FileNode.vue";
 
 const props = defineProps<{
   folderNode: IFolderNode;
 }>();
-
-const hasChild = computed<boolean>(
-  () => props.folderNode.children.length === 0
-);
+const isLeaf = computed<boolean>(() => props.folderNode.children.length === 0);
 </script>
 
 <template>
-  <li :class="{ 'no-arrow': hasChild }">
-    <details open>
+  <li :class="{ 'no-arrow': isLeaf }">
+    <details ref="detailsRef" open>
       <summary>
         <svg
           xmlns="http://www.w3.org/2000/svg"
