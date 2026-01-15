@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import type { FileNode as IFileNode, FolderNode as IFolderNode } from "@/types";
 import FileNode from "@/components/FileNode.vue";
 
 const props = defineProps<{
   folderNode: IFolderNode;
 }>();
+
 const isLeaf = computed<boolean>(() => props.folderNode.children.length === 0);
+
+const { state, openContextMenu } = inject("contextMenu") as any;
+
+const handleRightClick = (e: MouseEvent) => {
+  openContextMenu(e, props.folderNode);
+};
 </script>
 
 <template>
   <li :class="{ 'no-arrow': isLeaf }">
     <details ref="detailsRef" open>
-      <summary>
+      <summary
+        @contextmenu.prevent="handleRightClick"
+        :class="{ 'menu-active': state?.id === props.folderNode.id }"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

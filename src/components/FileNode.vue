@@ -1,14 +1,24 @@
 <script setup lang="ts">
-import { type FileNode as IFileNode } from "../types";
+import { inject } from "vue";
+import { type FileNode as IFileNode } from "@/types";
 
 const props = defineProps<{
   fileNode: IFileNode;
 }>();
+
+const { state, openContextMenu } = inject("contextMenu") as any;
+
+const handleRightClick = (e: MouseEvent) => {
+  openContextMenu(e, props.fileNode);
+};
 </script>
 
 <template>
   <li>
-    <a>
+    <a
+      @contextmenu.prevent="handleRightClick"
+      :class="{ 'menu-active': state?.id === props.fileNode.id }"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

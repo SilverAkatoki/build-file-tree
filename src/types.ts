@@ -1,6 +1,7 @@
 export type NodeType = "file" | "folder";
 
 export interface BaseNode {
+  id: string;
   type: NodeType;
   name: string;
 }
@@ -15,3 +16,10 @@ export interface FolderNode extends BaseNode {
 }
 
 export type FileSystemNode = FileNode | FolderNode;
+
+export interface ContextMenu {
+  show: boolean;
+  x: number;
+  y: number;
+  data: null | FileSystemNode;
+};
