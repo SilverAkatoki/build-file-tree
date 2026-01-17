@@ -297,7 +297,7 @@ const handleCopy = async () => {
       class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-box bg-base-200"
     >
       <header
-        class="flex h-12 items-center gap-2 border-b border-base-300 px-4 text-sm font-semibold"
+        class="flex h-12 items-center gap-2 border-b border-base-300 px-4 text-sm font-semibold select-none"
       >
         文件树
       </header>
@@ -311,7 +311,7 @@ const handleCopy = async () => {
       <header
         class="flex h-12 items-center gap-2 border-b border-base-300 px-4 text-sm font-semibold"
       >
-        <span>预览</span>
+        <span class="select-none">预览</span>
         <div
           class="ml-auto"
           :class="[
@@ -351,8 +351,8 @@ const handleCopy = async () => {
       <div class="flex-1 overflow-auto p-4">
         <textarea
           readonly
-          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono leading-none whitespace-pre overflow-auto"
-          placeholder="在这里复制文件树"
+          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono whitespace-pre overflow-auto"
+          placeholder="文件树"
           >{{ showedFileTree }}</textarea
         >
       </div>
