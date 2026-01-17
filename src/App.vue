@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { ContextMenu, FolderNode as IFolderNode, NodeType } from "@/types";
+import type {
+  ContextMenu,
+  FileSystemNode,
+  FolderNode as IFolderNode,
+  NodeType,
+} from "@/types";
 import { computed, nextTick, provide, ref, watch } from "vue";
 import { useBuildFileTree } from "@/composables/useBuildFileTree";
 import FolderNode from "@/components/FolderNode.vue";
@@ -58,11 +63,11 @@ const contextMenu = ref<ContextMenu>({
 });
 
 const isClickFolder = computed<boolean>(
-  () => contextMenu.value.data?.type === "folder"
+  () => contextMenu.value.data?.type === "folder",
 );
 
 const isClickRoot = computed<boolean>(
-  () => contextMenu.value.data?.id === fileTree.value.id
+  () => contextMenu.value.data?.id === fileTree.value.id,
 );
 
 const openContextMenu = (e: MouseEvent, data: any) => {
@@ -193,7 +198,7 @@ window.addEventListener(
       resetContextMenu();
     }
   },
-  true
+  true,
 );
 
 const handleRename = () => {
@@ -222,14 +227,78 @@ const handleNewFolder = () => {
     resetContextMenu();
   }
 };
+
+const hoveredNodeId = ref<string | null>(null);
+
+const setHoveredNodeId = (id: string | null) => (hoveredNodeId.value = id);
+
+provide("hover", setHoveredNodeId);
+
+window.addEventListener("keydown", (e: KeyboardEvent) => {
+  if (document.activeElement?.tagName === "INPUT") return;
+
+  if (e.key !== "F2") return;
+
+  e.preventDefault();
+
+  if (!hoveredNodeId.value) return;
+
+  const findNode = (nodes: any, id: string): FileSystemNode | null => {
+    if (nodes.id === id) {
+      return nodes;
+    }
+    if (!nodes.children) return null;
+    for (const child of nodes.children) {
+      const found = findNode(child, id);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  contextMenu.value.data = findNode(fileTree.value, hoveredNodeId.value);
+  isRename.value = true;
+});
+
+window.addEventListener("keydown", (e: KeyboardEvent) => {
+  if (document.activeElement?.tagName !== "INPUT") return;
+
+  if (e.key !== "Escape") return;
+
+  e.preventDefault();
+
+  isRename.value = false;
+  resetContextMenu();
+});
+
+const isCopyTooltipOpen = ref(false);
+
+const handleCopy = async () => {
+  if (!showedFileTree.value) return;
+
+  try {
+    await navigator.clipboard.writeText(showedFileTree.value);
+  } catch (error) {
+    console.error("复制失败", error);
+    return;
+  }
+
+  isCopyTooltipOpen.value = true;
+  window.setTimeout(() => {
+    isCopyTooltipOpen.value = false;
+  }, 1500);
+};
 </script>
 
 <template>
-  <div class="flex h-lvh w-full gap-4 overflow-hidden bg-base-100 p-32">
+  <div
+    class="flex h-lvh w-full gap-4 overflow-hidden bg-base-100 pt-32 pb-32 pl-64 pr-64"
+  >
     <section
       class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-box bg-base-200"
     >
-      <header class="border-b border-base-300 px-4 py-2 text-sm font-semibold">
+      <header
+        class="flex h-12 items-center gap-2 border-b border-base-300 px-4 text-sm font-semibold"
+      >
         文件树
       </header>
       <ul class="menu menu-xs flex-1 overflow-auto p-2 w-full">
@@ -239,13 +308,50 @@ const handleNewFolder = () => {
     <section
       class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-box bg-base-200"
     >
-      <header class="border-b border-base-300 px-4 py-2 text-sm font-semibold">
-        预览
+      <header
+        class="flex h-12 items-center gap-2 border-b border-base-300 px-4 text-sm font-semibold"
+      >
+        <span>预览</span>
+        <div
+          class="ml-auto"
+          :class="[
+            isCopyTooltipOpen ? 'tooltip tooltip-left tooltip-open' : '',
+          ]"
+          :data-tip="isCopyTooltipOpen ? '已复制' : undefined"
+        >
+          <button class="btn btn-xs" type="button" @click="handleCopy">
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="4"
+                y="8"
+                width="12"
+                height="12"
+                rx="1"
+                stroke="#18181B"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M8 6V5C8 4.44772 8.44772 4 9 4H19C19.5523 4 20 4.44772 20 5V15C20 15.5523 19.5523 16 19 16H18"
+                stroke="#18181B"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-dasharray="2 2"
+              />
+            </svg>
+          </button>
+        </div>
       </header>
       <div class="flex-1 overflow-auto p-4">
         <textarea
-          readonly="true"
-          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono leading-none"
+          readonly
+          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono leading-none whitespace-pre overflow-auto"
           placeholder="在这里复制文件树"
           >{{ showedFileTree }}</textarea
         >

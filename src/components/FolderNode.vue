@@ -13,6 +13,8 @@ const { state, openContextMenu } = inject("contextMenu") as any;
 
 const { isRename, renameNode } = inject("rename") as any;
 
+const setHoveredNodeId = inject("hover") as any;
+
 const handleRightClick = (e: MouseEvent) => {
   openContextMenu(e, props.folderNode);
 };
@@ -53,11 +55,17 @@ const handleLeftClick = (e: MouseEvent) => {
 </script>
 
 <template>
-  <li :class="{ 'no-arrow': isLeaf }" @click="handleLeftClick">
+  <li
+    :class="{ 'no-arrow': isLeaf }"
+    @click="handleLeftClick"
+    @mouseover.stop="setHoveredNodeId(props.folderNode.id)"
+    @mouseleave="setHoveredNodeId(null)"
+  >
     <details ref="detailsRef" open>
       <summary
         @contextmenu.prevent="handleRightClick"
         :class="{ 'menu-active': state?.id === props.folderNode.id }"
+        class="whitespace-nowrap"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +91,7 @@ const handleLeftClick = (e: MouseEvent) => {
           @blur="handleInputBlur"
           @keyup.enter="($event.target as HTMLInputElement).blur()"
         />
-        <p v-else>
+        <p v-else class="shrink-0">
           {{ props.folderNode.name }}
         </p>
       </summary>

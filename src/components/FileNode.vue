@@ -6,7 +6,11 @@ const props = defineProps<{
   fileNode: IFileNode;
 }>();
 
-const { state, openContextMenu, resetContextMenu } = inject("contextMenu") as any;
+const { state, openContextMenu, resetContextMenu } = inject(
+  "contextMenu"
+) as any;
+
+const setHoveredNodeId = inject("hover") as any;
 
 const { isRename, renameNode } = inject("rename") as any;
 
@@ -41,15 +45,17 @@ const handleInputBlur = (e: FocusEvent) => {
   isRename.value = false;
   resetContextMenu();
 };
-
-
 </script>
 
 <template>
-  <li>
+  <li
+    @mouseover.stop="setHoveredNodeId(props.fileNode.id)"
+    @mouseleave="setHoveredNodeId(null)"
+  >
     <a
       @contextmenu.prevent="handleRightClick"
       :class="{ 'menu-active': state?.id === props.fileNode.id }"
+      class="whitespace-nowrap"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +81,7 @@ const handleInputBlur = (e: FocusEvent) => {
         @blur="handleInputBlur"
         @keyup.enter="($event.target as HTMLInputElement).blur()"
       />
-      <p v-else>
+      <p v-else class="shrink-0">
         {{ props.fileNode.name }}
       </p>
     </a>
