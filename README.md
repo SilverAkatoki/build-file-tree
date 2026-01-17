@@ -1,5 +1,10 @@
-# Vue 3 + TypeScript + Vite
+# 文件树生成器
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+用以方便写文档的时候生成如下文件树所写的小工具，由于是自用所以可能功能会不完善。  
+依据惯例这也是个练手项目。
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+UI 框架：[daisy UI](https://daisyui.com/)
+
+## 效果图
+
+![alt text](screenshots.gif)
