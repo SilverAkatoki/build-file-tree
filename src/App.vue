@@ -351,7 +351,7 @@ const handleCopy = async () => {
       <div class="flex-1 overflow-auto p-4">
         <textarea
           readonly
-          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono whitespace-pre overflow-auto"
+          class="textarea textarea-ghos h-full w-full min-h-0 resize-none font-mono whitespace-pre overflow-auto"
           placeholder="文件树"
           >{{ showedFileTree }}</textarea
         >
