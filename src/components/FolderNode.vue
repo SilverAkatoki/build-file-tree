@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, nextTick, ref, watch } from "vue";
 import type { FileNode as IFileNode, FolderNode as IFolderNode } from "@/types";
 import FileNode from "@/components/FileNode.vue";
 
@@ -11,13 +11,49 @@ const isLeaf = computed<boolean>(() => props.folderNode.children.length === 0);
 
 const { state, openContextMenu } = inject("contextMenu") as any;
 
+const { isRename, renameNode } = inject("rename") as any;
+
 const handleRightClick = (e: MouseEvent) => {
   openContextMenu(e, props.folderNode);
+};
+
+const newName = ref<string>(props.folderNode.name);
+
+const isInRename = computed<boolean>(
+  () => isRename.value && state.value?.id === props.folderNode.id
+);
+
+const inputRef = ref<HTMLInputElement | null>(null);
+
+watch(isInRename, async (val) => {
+  if (val) {
+    await nextTick();
+    inputRef.value?.focus();
+    // 失焦的时候绑的是关闭重命名状态，所以这里必须要聚焦在输入框里
+    // 从体验上来说重命名自动聚焦也是很正常的吧
+
+    inputRef.value?.select();
+  }
+});
+
+const handleInputBlur = (e: FocusEvent) => {
+  const newName = (e.target as HTMLInputElement).value;
+  if (newName && newName !== props.folderNode.name) {
+    renameNode(props.folderNode.id, newName);
+  }
+  isRename.value = false;
+};
+
+const handleLeftClick = (e: MouseEvent) => {
+  if (state.value && !isRename.value) {
+    e.preventDefault();
+    return;
+  }
 };
 </script>
 
 <template>
-  <li :class="{ 'no-arrow': isLeaf }">
+  <li :class="{ 'no-arrow': isLeaf }" @click="handleLeftClick">
     <details ref="detailsRef" open>
       <summary
         @contextmenu.prevent="handleRightClick"
@@ -37,7 +73,19 @@ const handleRightClick = (e: MouseEvent) => {
             d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
           />
         </svg>
-        {{ props.folderNode.name }}
+        <input
+          ref="inputRef"
+          v-if="isInRename"
+          type="text"
+          placeholder="文件名"
+          class="input input-xs text-black"
+          v-model="newName"
+          @blur="handleInputBlur"
+          @keyup.enter="($event.target as HTMLInputElement).blur()"
+        />
+        <p v-else>
+          {{ props.folderNode.name }}
+        </p>
       </summary>
       <ul v-for="child in props.folderNode.children">
         <FileNode

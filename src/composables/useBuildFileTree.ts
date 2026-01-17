@@ -34,11 +34,16 @@ export const useBuildFileTree = () => {
     }
   };
 
-  watch(root, () => {
-    if (root.value !== null) {
-      dfs(root.value, "", true, true);
-    }
-  });
+  watch(
+    root,
+    (newRoot) => {
+      if (newRoot) {
+        fileTreeArr.value = [];
+        dfs(newRoot, "", true, true);
+      }
+    },
+    { deep: true }
+  );
 
 
   const fileTree = computed<string>(() => fileTreeArr.value.join("\n"));

@@ -1,16 +1,48 @@
 <script setup lang="ts">
-import { inject } from "vue";
+import { computed, inject, nextTick, ref, watch } from "vue";
 import { type FileNode as IFileNode } from "@/types";
 
 const props = defineProps<{
   fileNode: IFileNode;
 }>();
 
-const { state, openContextMenu } = inject("contextMenu") as any;
+const { state, openContextMenu, resetContextMenu } = inject("contextMenu") as any;
+
+const { isRename, renameNode } = inject("rename") as any;
 
 const handleRightClick = (e: MouseEvent) => {
   openContextMenu(e, props.fileNode);
 };
+
+const newName = ref<string>(props.fileNode.name);
+
+const isInRename = computed<boolean>(
+  () => isRename.value && state.value?.id === props.fileNode.id
+);
+
+const inputRef = ref<HTMLInputElement | null>(null);
+
+watch(isInRename, async (val) => {
+  if (val) {
+    await nextTick();
+    inputRef.value?.focus();
+    // 失焦的时候绑的是关闭重命名状态，所以这里必须要聚焦在输入框里
+    // 从体验上来说重命名自动聚焦也是很正常的吧
+
+    inputRef.value?.select();
+  }
+});
+
+const handleInputBlur = (e: FocusEvent) => {
+  const newName = (e.target as HTMLInputElement).value;
+  if (newName && newName !== props.fileNode.name) {
+    renameNode(props.fileNode.id, newName);
+  }
+  isRename.value = false;
+  resetContextMenu();
+};
+
+
 </script>
 
 <template>
@@ -33,7 +65,19 @@ const handleRightClick = (e: MouseEvent) => {
           d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
         />
       </svg>
-      {{ props.fileNode.name }}
+      <input
+        ref="inputRef"
+        v-if="isInRename"
+        type="text"
+        placeholder="文件名"
+        class="input input-xs text-black"
+        v-model="newName"
+        @blur="handleInputBlur"
+        @keyup.enter="($event.target as HTMLInputElement).blur()"
+      />
+      <p v-else>
+        {{ props.fileNode.name }}
+      </p>
     </a>
   </li>
 </template>
