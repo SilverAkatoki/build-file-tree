@@ -76,7 +76,7 @@ const handleInputBlur = (e: FocusEvent) => {
         v-if="isInRename"
         type="text"
         placeholder="文件名"
-        class="input input-xs text-black"
+        class="input input-xs text-gray-900 placeholder:text-gray-500 dark:text-gray-100 dark:placeholder:text-gray-400"
         v-model="newName"
         @blur="handleInputBlur"
         @keyup.enter="($event.target as HTMLInputElement).blur()"
