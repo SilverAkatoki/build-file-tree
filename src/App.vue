@@ -319,7 +319,7 @@ const handleCopy = async () => {
           ]"
           :data-tip="isCopyTooltipOpen ? '已复制' : undefined"
         >
-          <button class="btn btn-xs" type="button" @click="handleCopy">
+          <button class="btn btn-xs text-base-content" type="button" @click="handleCopy">
             <svg
               width="100%"
               height="100%"
@@ -333,13 +333,13 @@ const handleCopy = async () => {
                 width="12"
                 height="12"
                 rx="1"
-                stroke="#18181B"
+                stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
               <path
                 d="M8 6V5C8 4.44772 8.44772 4 9 4H19C19.5523 4 20 4.44772 20 5V15C20 15.5523 19.5523 16 19 16H18"
-                stroke="#18181B"
+                stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-dasharray="2 2"
@@ -351,7 +351,7 @@ const handleCopy = async () => {
       <div class="flex-1 overflow-auto p-4">
         <textarea
           readonly
-          class="textarea textarea-ghost bg-white h-full w-full min-h-0 resize-none font-mono whitespace-pre overflow-auto"
+          class="textarea textarea-ghos h-full w-full min-h-0 resize-none font-mono whitespace-pre overflow-auto"
           placeholder="文件树"
           >{{ showedFileTree }}</textarea
         >
