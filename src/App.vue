@@ -5,7 +5,15 @@ import type {
   FolderNode as IFolderNode,
   NodeType,
 } from "@/types";
-import { computed, nextTick, provide, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  watch,
+} from "vue";
 import { useBuildFileTree } from "@/composables/useBuildFileTree";
 import FolderNode from "@/components/FolderNode.vue";
 
@@ -174,9 +182,12 @@ provide("contextMenu", {
   resetContextMenu,
 });
 
+// 反正只是绑定操作事件，肯定是 DOM 渲染完了才会触发，不用 onMounted 包裹也可以
+
 // 由于是在 window 上监听，事件顺序是最后一个
 // 肯定先让各个 DOM 的事件钩子能够执行，最后才关
-window.addEventListener("click", (e) => {
+
+const handleClickOutside = (e: PointerEvent) => {
   const target = e.target as HTMLElement;
 
   if (target.closest("input")) return;
@@ -189,17 +200,13 @@ window.addEventListener("click", (e) => {
     return;
   }
   resetContextMenu();
-});
+};
 
-window.addEventListener(
-  "contextmenu",
-  (e) => {
-    if (!(e.target as HTMLElement).closest("a")) {
-      resetContextMenu();
-    }
-  },
-  true,
-);
+const handleRightClickOutside = (e: PointerEvent) => {
+  if (!(e.target as HTMLElement).closest("a")) {
+    resetContextMenu();
+  }
+};
 
 const handleRename = () => {
   isRename.value = true;
@@ -234,7 +241,7 @@ const setHoveredNodeId = (id: string | null) => (hoveredNodeId.value = id);
 
 provide("hover", setHoveredNodeId);
 
-window.addEventListener("keydown", (e: KeyboardEvent) => {
+const handleKeyRename = (e: KeyboardEvent) => {
   if (document.activeElement?.tagName === "INPUT") return;
 
   if (e.key !== "F2") return;
@@ -257,9 +264,9 @@ window.addEventListener("keydown", (e: KeyboardEvent) => {
 
   contextMenu.value.data = findNode(fileTree.value, hoveredNodeId.value);
   isRename.value = true;
-});
+};
 
-window.addEventListener("keydown", (e: KeyboardEvent) => {
+const handleKeyRenameOut = (e: KeyboardEvent) => {
   if (document.activeElement?.tagName !== "INPUT") return;
 
   if (e.key !== "Escape") return;
@@ -268,6 +275,20 @@ window.addEventListener("keydown", (e: KeyboardEvent) => {
 
   isRename.value = false;
   resetContextMenu();
+};
+
+onMounted(() => {
+  window.addEventListener("click", handleClickOutside);
+  window.addEventListener("contextmenu", handleRightClickOutside, true);
+  window.addEventListener("keydown", handleKeyRename);
+  window.addEventListener("keydown", handleKeyRenameOut);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("contextmenu", handleRightClickOutside, true);
+  window.removeEventListener("keydown", handleKeyRename);
+  window.removeEventListener("keydown", handleKeyRenameOut);
 });
 
 const isCopyTooltipOpen = ref(false);
@@ -319,7 +340,11 @@ const handleCopy = async () => {
           ]"
           :data-tip="isCopyTooltipOpen ? '已复制' : undefined"
         >
-          <button class="btn btn-xs text-base-content" type="button" @click="handleCopy">
+          <button
+            class="btn btn-xs text-base-content"
+            type="button"
+            @click="handleCopy"
+          >
             <svg
               width="100%"
               height="100%"
